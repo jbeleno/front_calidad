@@ -7,7 +7,7 @@ export default function FormulariosEmpresaTable({ empresa, onVolver, onCrearForm
   const [idFormularioResultados, setIdFormularioResultados] = useState(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8001/formularios/")
+    fetch("https://microform-production.up.railway.app/formularios/")
       .then(res => res.json())
       .then(data => {
         setFormularios(data.filter(f => f.id_empresa === empresa.id_empresa));

@@ -6,7 +6,7 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack, i
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8002/parametros_predeterminados/") // Ajusta el puerto si es necesario
+    fetch("https://microev-production.up.railway.app/parametros_predeterminados/") // Ajusta el puerto si es necesario
       .then(res => res.json())
       .then(data => setParametrosPredeterminados(data));
   }, []);

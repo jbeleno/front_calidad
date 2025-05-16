@@ -6,7 +6,7 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
 
   useEffect(() => {
     // Traer todas las preguntas predeterminadas
-    fetch("http://127.0.0.1:8002/preguntas_predeterminadas/")
+    fetch("https://microev-production.up.railway.app/preguntas_predeterminadas/")
       .then(res => res.json())
       .then(data => setPreguntasPredeterminadas(data));
   }, []);
@@ -86,7 +86,7 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
     for (const idParametro in preguntasPorParametro) {
       for (const p of preguntasPorParametro[idParametro]) {
         try {
-          const res = await fetch("http://127.0.0.1:8002/preguntas/", {
+          const res = await fetch("https://microev-production.up.railway.app/preguntas/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

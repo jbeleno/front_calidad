@@ -9,13 +9,13 @@ export default function Resultados({ idFormulario, onVolver }) {
     async function fetchData() {
       setLoading(true);
       // 1. Obtener parámetros del formulario
-      const resParam = await fetch(`http://127.0.0.1:8002/parametros/?id_formulario=${idFormulario}`);
+      const resParam = await fetch(`https://microev-production.up.railway.app/parametros/?id_formulario=${idFormulario}`);
       const params = await resParam.json();
       setParametros(params);
       // 2. Obtener preguntas para cada parámetro
       const preguntasObj = {};
       for (const param of params) {
-        const resPreg = await fetch(`http://127.0.0.1:8002/preguntas/parametro/${param.id_parametro}`);
+        const resPreg = await fetch(`https://microev-production.up.railway.app/preguntas/parametro/${param.id_parametro}`);
         preguntasObj[param.id_parametro] = await resPreg.json();
       }
       setPreguntasPorParametro(preguntasObj);

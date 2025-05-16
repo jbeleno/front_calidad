@@ -67,7 +67,7 @@ export default function FormularioWizard({ onClose }) {
     const nuevosParametros = [];
     for (const p of parametros) {
       try {
-        const res = await fetch("http://127.0.0.1:8002/parametros/", {
+        const res = await fetch("https://microev-production.up.railway.app/parametros/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

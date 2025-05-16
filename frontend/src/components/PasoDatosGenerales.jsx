@@ -11,7 +11,7 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/empresas/") // Ajusta el puerto si es necesario
+    fetch("https://backendcalid-production.up.railway.app/empresas/") // Ajusta el puerto si es necesario
       .then(res => res.json())
       .then(data => setEmpresas(data));
   }, []);
@@ -85,7 +85,7 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
     // Si es empresa nueva, crearla primero
     if (datos.empresa_nueva) {
       try {
-        const res = await fetch("http://127.0.0.1:8000/empresas/", {
+        const res = await fetch("https://backendcalid-production.up.railway.app/empresas/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre: datos.empresa, telefono: datos.telefono })
@@ -110,7 +110,7 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
     };
     let formulario;
     try {
-      const res = await fetch("http://127.0.0.1:8001/formularios/", {
+      const res = await fetch("https://microform-production.up.railway.app/formularios/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formularioPayload)
@@ -126,7 +126,7 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
     // 2. Crear objetivos (en serie)
     for (const obj of objetivos) {
       try {
-        const res = await fetch("http://127.0.0.1:8001/objetivos/", {
+        const res = await fetch("https://microform-production.up.railway.app/objetivos/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -145,7 +145,7 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
     // 3. Crear participantes (en serie)
     for (const p of participantes) {
       try {
-        const res = await fetch("http://127.0.0.1:8001/participantes/", {
+        const res = await fetch("https://microform-production.up.railway.app/participantes/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

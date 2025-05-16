@@ -5,7 +5,7 @@ export default function EmpresasTable({ onVerFormularios, onCrearFormulario }) {
   const [empresas, setEmpresas] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/empresas/")
+    fetch("https://backendcalid-production.up.railway.app/empresas/")
       .then(res => res.json())
       .then(setEmpresas);
   }, []);
