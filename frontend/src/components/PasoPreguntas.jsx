@@ -21,6 +21,9 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
     return obj;
   });
 
+  // Estado local: observaciones por pregunta (clave: id temporal de pregunta en frontend)
+  const [observacionesPorPregunta, setObservacionesPorPregunta] = useState({});
+
   // Agregar pregunta predeterminada
   const handleAddPredeterminada = (idParametro, preguntaPred) => {
     setPreguntasPorParametro(prev => {
@@ -68,6 +71,40 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
       nuevas.splice(idx, 1);
       return { ...prev, [idParametro]: nuevas };
     });
+    setObservacionesPorPregunta(prev => {
+      const nuevo = { ...prev };
+      delete nuevo[`${idParametro}_${idx}`];
+      return nuevo;
+    });
+  };
+
+  // Manejar observaciones
+  const handleAddObservacion = (idParametro, idx) => {
+    setObservacionesPorPregunta(prev => {
+      const key = `${idParametro}_${idx}`;
+      return {
+        ...prev,
+        [key]: [...(prev[key] || []), ""]
+      };
+    });
+  };
+
+  const handleObservacionChange = (idParametro, idx, obsIdx, value) => {
+    setObservacionesPorPregunta(prev => {
+      const key = `${idParametro}_${idx}`;
+      const nuevas = [...(prev[key] || [])];
+      nuevas[obsIdx] = value;
+      return { ...prev, [key]: nuevas };
+    });
+  };
+
+  const handleDeleteObservacion = (idParametro, idx, obsIdx) => {
+    setObservacionesPorPregunta(prev => {
+      const key = `${idParametro}_${idx}`;
+      const nuevas = [...(prev[key] || [])];
+      nuevas.splice(obsIdx, 1);
+      return { ...prev, [key]: nuevas };
+    });
   };
 
   // Guardar en backend
@@ -84,7 +121,8 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
     setError("");
     // Guardar en backend
     for (const idParametro in preguntasPorParametro) {
-      for (const p of preguntasPorParametro[idParametro]) {
+      for (let idx = 0; idx < preguntasPorParametro[idParametro].length; idx++) {
+        const p = preguntasPorParametro[idParametro][idx];
         try {
           const res = await fetch("https://microev-production.up.railway.app/preguntas/", {
             method: "POST",
@@ -99,8 +137,24 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
             })
           });
           if (!res.ok) throw new Error("Error creando pregunta");
+          const preguntaCreada = await res.json();
+          // Guardar observaciones asociadas a esta pregunta
+          const key = `${idParametro}_${idx}`;
+          const observaciones = observacionesPorPregunta[key] || [];
+          for (const texto_observacion of observaciones) {
+            if (texto_observacion && texto_observacion.trim() !== "") {
+              await fetch("https://microev-production.up.railway.app/observaciones/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id_pregunta: preguntaCreada.id_pregunta,
+                  texto_observacion
+                })
+              });
+            }
+          }
         } catch (err) {
-          setError("No se pudo crear una pregunta: " + err.message);
+          setError("No se pudo crear una pregunta u observación: " + err.message);
           return;
         }
       }
@@ -167,41 +221,68 @@ export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, i
             </thead>
             <tbody>
               {(preguntasPorParametro[param.id_parametro || idx] || []).map((p, i) => (
-                <tr key={i}>
-                  <td>
-                    <input
-                      value={p.nombre}
-                      onChange={e => handleInput(param.id_parametro || idx, i, "nombre", e.target.value)}
-                      placeholder="Pregunta"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      value={p.descripcion}
-                      onChange={e => handleInput(param.id_parametro || idx, i, "descripcion", e.target.value)}
-                      placeholder="Descripción"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      value={p.valor}
-                      onChange={e => {
-                        const v = e.target.value;
-                        if (v === '' || (Number(v) >= 0 && Number(v) <= 3 && Number.isInteger(Number(v)))) {
-                          handleInput(param.id_parametro || idx, i, "valor", v);
-                        }
-                      }}
-                      placeholder="Valor"
-                      type="number"
-                      min={0}
-                      max={3}
-                      step={1}
-                    />
-                  </td>
-                  <td>
-                    <button type="button" onClick={() => handleDelete(param.id_parametro || idx, i)}>Eliminar</button>
-                  </td>
-                </tr>
+                <React.Fragment key={i}>
+                  <tr>
+                    <td>
+                      <input
+                        value={p.nombre}
+                        onChange={e => handleInput(param.id_parametro || idx, i, "nombre", e.target.value)}
+                        placeholder="Pregunta"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={p.descripcion}
+                        onChange={e => handleInput(param.id_parametro || idx, i, "descripcion", e.target.value)}
+                        placeholder="Descripción"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        value={p.valor}
+                        onChange={e => {
+                          const v = e.target.value;
+                          if (v === '' || (Number(v) >= 0 && Number(v) <= 3 && Number.isInteger(Number(v)))) {
+                            handleInput(param.id_parametro || idx, i, "valor", v);
+                          }
+                        }}
+                        placeholder="Valor"
+                        type="number"
+                        min={0}
+                        max={3}
+                        step={1}
+                      />
+                    </td>
+                    <td>
+                      <button type="button" onClick={() => handleDelete(param.id_parametro || idx, i)}>Eliminar</button>
+                    </td>
+                  </tr>
+                  {/* Observaciones para esta pregunta */}
+                  <tr>
+                    <td colSpan={4}>
+                      <div style={{ marginLeft: 16 }}>
+                        <strong>Observaciones:</strong>
+                        {(observacionesPorPregunta[`${param.id_parametro || idx}_${i}`] || []).map((obs, obsIdx) => (
+                          <div key={obsIdx} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+                            <input
+                              type="text"
+                              value={obs}
+                              onChange={e => handleObservacionChange(param.id_parametro || idx, i, obsIdx, e.target.value)}
+                              placeholder="Observación"
+                              style={{ flex: 1, marginRight: 8 }}
+                            />
+                            <button type="button" onClick={() => handleDeleteObservacion(param.id_parametro || idx, i, obsIdx)}>
+                              Eliminar
+                            </button>
+                          </div>
+                        ))}
+                        <button type="button" onClick={() => handleAddObservacion(param.id_parametro || idx, i)}>
+                          Agregar observación
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
