@@ -1,0 +1,31 @@
+.formularios-empresa-table-container {
+  background: #fff;
+  max-width: 700px;
+  margin: 48px auto;
+  padding: 32px 24px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.formularios-empresa-table-container h2 {
+  margin-bottom: 24px;
+  text-align: center;
+}
+.formularios-empresa-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.formularios-empresa-table-container th, .formularios-empresa-table-container td {
+  border: 1px solid #bbb;
+  padding: 10px;
+  text-align: left;
+  color: #111;
+}
+.btn-principal {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+}

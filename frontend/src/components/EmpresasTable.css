@@ -1,0 +1,47 @@
+.empresas-table-container {
+  background: #fff;
+  /* Cambia el ancho y alto aquí para ajustar el tamaño del recuadro */
+  width: 900px;      /* Puedes cambiar este valor para el ancho */
+  min-height: 600px; /* Puedes cambiar este valor para el alto mínimo */
+  margin: 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  color: #111;
+
+  /* Centrado absoluto en pantalla */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Si quieres que el recuadro nunca sea más grande que la pantalla: */
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}
+.empresas-table-container h2 {
+  margin-bottom: 24px;
+  text-align: center;
+}
+.empresas-table-container table {
+  width: 90%;
+  margin-left: 10px;
+  margin-right: 20px;
+  border-collapse: collapse;
+  color: #111;
+}
+.empresas-table-container th, .empresas-table-container td {
+  border: 1px solid #bbb;
+  padding: 10px;
+  text-align: left;
+  color: #111;
+}
+.btn-principal {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  margin-right: 10px;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+}
