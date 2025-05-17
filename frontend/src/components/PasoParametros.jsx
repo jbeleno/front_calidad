@@ -89,27 +89,25 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
   };
 
   return (
-    <div>
+    <>
       {/* Header */}
-      <div className="px-6 py-4 border-b">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Parámetros y Porcentaje
-        </h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Parámetros y Porcentaje</h1>
       </div>
 
-      {/* Body */}
-      <div className="px-6 py-6 space-y-6">
+      {/* Lista de parámetros */}
+      <div className="flex flex-col gap-6">
         {parametros.map((p, i) => (
           <div
             key={i}
-            className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start"
+            className="relative bg-gray-50 rounded-xl shadow-md flex flex-col md:flex-row md:items-start gap-4 border border-gray-200 transition hover:shadow-lg group px-6 py-5"
           >
             {/* Select + descripción */}
-            <div className="md:col-span-4">
+            <div className="flex-1 min-w-0 flex flex-col gap-2 md:pr-4">
               <select
                 value={p.id_parametro_predeterminado || ''}
                 onChange={e => handleSelect(i, e)}
-                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
               >
                 <option value="">Selecciona un parámetro</option>
                 {parametrosPredeterminados.map(pp => (
@@ -122,74 +120,84 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
                 ))}
               </select>
               {p.descripcion && (
-                <p className="mt-2 text-gray-600 text-sm">
+                <p className="text-gray-500 text-sm font-normal italic">
                   {p.descripcion}
                 </p>
               )}
             </div>
 
-            {/* Porcentaje máximo */}
-            <input
-              name="porcentaje_maximo"
-              type="number"
-              placeholder="%" 
-              value={p.porcentaje_maximo}
-              onChange={e => handleInput(i, e)}
-              className="md:col-span-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-            />
+            {/* Porcentaje máximo alineado arriba */}
+            <div className="flex flex-row items-start gap-2 md:w-48 min-w-[140px] md:pr-4">
+              <label className="text-gray-700 text-sm font-semibold whitespace-nowrap mr-2">Porcentaje</label>
+              <input
+                name="porcentaje_maximo"
+                type="number"
+                placeholder="%"
+                value={p.porcentaje_maximo}
+                onChange={e => handleInput(i, e)}
+                className="w-20 border border-gray-300 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                min="0"
+                max="100"
+              />
+            </div>
 
-            {/* Eliminar */}
-            <button
-              type="button"
-              onClick={() => {
-                const nuevos = parametros.slice();
-                nuevos.splice(i, 1);
-                onChange(nuevos);
-              }}
-              className="btn-eliminar md:col-span-1 ml-4 rounded-lg px-4 py-2"
-            >
-              <FiTrash2 className="mr-2" />
-              Eliminar
-            </button>
+            {/* Botón eliminar alineado arriba */}
+            <div className="flex items-start md:justify-end md:w-40 mt-2 md:mt-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const nuevos = parametros.slice();
+                  nuevos.splice(i, 1);
+                  onChange(nuevos);
+                }}
+                className="btn-eliminar"
+                title="Eliminar parámetro"
+              >
+                <FiTrash2 className="mr-2" />
+                Eliminar
+              </button>
+            </div>
           </div>
         ))}
+      </div>
 
-        {/* Agregar parámetro */}
-        <div>
-          <button
-            type="button"
-            onClick={handleAddParametro}
-            className="inline-flex items-center px-5 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-medium transition"
-          >
-            <FiPlus className="mr-2" />
-            Agregar parámetro
-          </button>
-        </div>
+      {/* Agregar parámetro */}
+      <div className="flex justify-center mt-8 mb-4">
+        <button
+          type="button"
+          onClick={handleAddParametro}
+          className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white font-bold text-lg shadow-lg transition transform hover:scale-105 focus:outline-none"
+        >
+          <FiPlus className="mr-2 text-2xl" />
+          Agregar parámetro
+        </button>
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
         <button
           onClick={onBack}
-          className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+          className="px-8 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg transition shadow"
         >
           Atrás
         </button>
 
         {error && (
-          <p className="text-red-600 text-center flex-1 mx-4">
-            {error}
-          </p>
+          <div className="flex-1 flex justify-center">
+            <p className="bg-red-50 border border-red-300 text-red-700 px-6 py-3 rounded-lg text-center font-semibold shadow animate-shake">
+              {error}
+            </p>
+          </div>
         )}
 
         <button
           onClick={handleNextClick}
           disabled={guardando}
-          className="px-6 py-3 rounded-lg bg-black hover:bg-gray-800 text-white font-semibold transition ml-auto"
+          className="px-8 py-3 rounded-lg bg-black hover:bg-gray-800 text-white font-semibold text-lg transition shadow ml-auto disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {guardando ? 'Guardando...' : 'Siguiente'}
         </button>
       </div>
-    </div>
+    </>
   );
 }
