@@ -80,10 +80,148 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
     onChange({ ...datos, participantes: nuevos });
   };
 
-  const handleNext = () => {
-    // ... tus validaciones existentes ...
+  // —— Reinyección de la capa funcional original —— 
+  const handleNext = async () => {
+    // Validar campos básicos
+    if (
+      !datos.fecha ||
+      !datos.ciudad ||
+      !datos.nombre_software ||
+      (!datos.empresa_nueva && !datos.empresa_id) ||
+      !datos.telefono
+    ) {
+      setError('Todos los campos de datos generales son obligatorios.');
+      return;
+    }
+    if (datos.empresa_nueva && !datos.empresa) {
+      setError('El nombre de la nueva empresa es obligatorio.');
+      return;
+    }
+
+    // Validar participantes
+    if (participantes.length < 1) {
+      setError('Debe haber al menos un participante.');
+      return;
+    }
+    for (const p of participantes) {
+      if (!p.nombre || !p.cargo || !p.firma) {
+        setError('Todos los campos de cada participante son obligatorios.');
+        return;
+      }
+    }
+
+    // Validar objetivos
+    if (objetivos.length < 1) {
+      setError('Debe haber al menos un objetivo.');
+      return;
+    }
+    const generales = objetivos.filter(o => o.tipo === 'general');
+    const especificos = objetivos.filter(o => o.tipo === 'especifico');
+    if (generales.length < 1) {
+      setError('Debe haber al menos un objetivo general.');
+      return;
+    }
+    if (especificos.length < 1) {
+      setError('Debe haber al menos un objetivo específico.');
+      return;
+    }
+    for (const o of objetivos) {
+      if (!o.descripcion || !o.tipo) {
+        setError('Todos los campos de cada objetivo son obligatorios.');
+        return;
+      }
+    }
+
     setError('');
-    onNext();
+
+    // 1. Crear empresa si es nueva
+    let id_empresa = datos.empresa_id;
+    if (datos.empresa_nueva) {
+      try {
+        const res = await fetch('https://backendcalid-production.up.railway.app/empresas/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: datos.empresa,
+            telefono: datos.telefono
+          })
+        });
+        if (!res.ok) throw new Error('Error creando la empresa');
+        const empresaCreada = await res.json();
+        id_empresa = empresaCreada.id_empresa;
+      } catch (err) {
+        setError('No se pudo crear la empresa: ' + err.message);
+        return;
+      }
+    }
+    if (!id_empresa) {
+      setError('Debes seleccionar o crear una empresa válida.');
+      return;
+    }
+
+    // 2. Crear el formulario
+    let formulario;
+    try {
+      const res = await fetch('https://microform-production.up.railway.app/formularios/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_empresa,
+          fecha: datos.fecha,
+          ciudad: datos.ciudad,
+          nombre_software: datos.nombre_software
+        })
+      });
+      if (!res.ok) throw new Error('Error creando el formulario');
+      formulario = await res.json();
+    } catch (err) {
+      setError('No se pudo crear el formulario: ' + err.message);
+      return;
+    }
+    const id_formulario = formulario.id_formulario;
+
+    // 3. Crear objetivos
+    for (const obj of objetivos) {
+      try {
+        const res = await fetch('https://microform-production.up.railway.app/objetivos/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_formulario,
+            descripcion: obj.descripcion,
+            tipo: obj.tipo
+          })
+        });
+        if (!res.ok) throw new Error('Error creando objetivo');
+      } catch (err) {
+        setError('No se pudo crear un objetivo: ' + err.message);
+        return;
+      }
+    }
+
+    // 4. Crear participantes
+    for (const p of participantes) {
+      try {
+        const res = await fetch('https://microform-production.up.railway.app/participantes/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_formulario,
+            nombre: p.nombre,
+            cargo: p.cargo,
+            firma: p.firma
+          })
+        });
+        if (!res.ok) throw new Error('Error creando participante');
+      } catch (err) {
+        setError('No se pudo crear un participante: ' + err.message);
+        return;
+      }
+    }
+
+    // 5. Continuar al siguiente paso con el ID creado
+    setError('');
+    onNext(id_formulario);
   };
 
   return (
@@ -191,129 +329,105 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
         </div>
 
         {/* Objetivos */}
-<section>
-  <h2 className="text-lg font-medium text-gray-700 border-b pb-2 mb-4">
-    Objetivos
-  </h2>
-  <div className="space-y-4">
-    {objetivos.map((o, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-1 md:grid-cols-6 gap-3 items-center"
-      >
-        {/* Descripción */}
-        <input
-          type="text"
-          placeholder="Descripción"
-          value={o.descripcion}
-          onChange={e => updateObjetivo(i, 'descripcion', e.target.value)}
-          className="md:col-span-4 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-        />
+        <section>
+          <h2 className="text-lg font-medium text-gray-700 border-b pb-2 mb-4">
+            Objetivos
+          </h2>
+          <div className="space-y-4">
+            {objetivos.map((o, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-1 md:grid-cols-6 gap-3 items-center"
+              >
+                <input
+                  type="text"
+                  placeholder="Descripción"
+                  value={o.descripcion}
+                  onChange={e => updateObjetivo(i, 'descripcion', e.target.value)}
+                  className="md:col-span-4 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                />
+                <select
+                  value={o.tipo}
+                  onChange={e => updateObjetivo(i, 'tipo', e.target.value)}
+                  className="md:col-span-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  <option value="">Tipo</option>
+                  <option value="general">General</option>
+                  <option value="especifico">Específico</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => removeObjetivo(i)}
+                  className="btn-eliminar ml-4 rounded-lg p-2"
+                >
+                  <FiTrash2 className="mr-2" />
+                  Eliminar
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={addObjetivo}
+              className="inline-flex items-center px-5 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-medium transition"
+            >
+              <FiPlus className="mr-2" /> Agregar objetivo
+            </button>
+          </div>
+        </section>
 
-        {/* Tipo */}
-        <select
-          value={o.tipo}
-          onChange={e => updateObjetivo(i, 'tipo', e.target.value)}
-          className="md:col-span-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-        >
-          <option value="">Tipo</option>
-          <option value="general">General</option>
-          <option value="especifico">Específico</option>
-        </select>
-
-        {/* Eliminar */}
-        <button
-          type="button"
-          onClick={() => removeObjetivo(i)}
-          className="btn-eliminar ml-4 rounded-lg p-2"
-        >
-          <FiTrash2 className="mr-2" />
-          Eliminar
-        </button>
-      </div>
-    ))}
-  </div>
-
-  {/* Agregar objetivo */}
-  <div className="mt-4">
-    <button
-      onClick={addObjetivo}
-      className="inline-flex items-center px-5 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-medium transition"
-    >
-      <FiPlus className="mr-2" /> Agregar objetivo
-    </button>
-  </div>
-</section>
-
-
-{/* Participantes */}
-<section>
-  <h2 className="text-lg font-medium text-gray-700 border-b pb-2 mb-4">
-    Participantes
-  </h2>
-  <div className="space-y-4">
-    {participantes.map((p, i) => (
-      <div
-        key={i}
-        className="grid grid-cols-1 md:grid-cols-6 gap-3 items-center"
-      >
-        {/* Nombre */}
-        <input
-          type="text"
-          placeholder="Nombre"
-          value={p.nombre}
-          onChange={e =>
-            updateParticipante(i, 'nombre', e.target.value)
-          }
-          className="md:col-span-2 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-        />
-
-        {/* Cargo */}
-        <input
-          type="text"
-          placeholder="Cargo"
-          value={p.cargo}
-          onChange={e =>
-            updateParticipante(i, 'cargo', e.target.value)
-          }
-          className="md:col-span-2 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-        />
-
-        {/* Firma */}
-        <input
-          type="text"
-          placeholder="Firma"
-          value={p.firma}
-          onChange={e =>
-            updateParticipante(i, 'firma', e.target.value)
-          }
-          className="md:col-span-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
-        />
-
-        {/* Botón Eliminar con margen */}
-        <button
-          type="button"
-          onClick={() => removeParticipante(i)}
-          className="btn-eliminar ml-4 rounded-lg p-2"
-        >
-          <FiTrash2 className="mr-2" />
-          Eliminar
-        </button>
-      </div>
-    ))}
-  </div>
-
-  {/* Agregar participante con espacio superior */}
-  <div className="mt-4">
-    <button
-      onClick={addParticipante}
-      className="inline-flex items-center px-5 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-medium transition"
-    >
-      <FiPlus className="mr-2" /> Agregar participante
-    </button>
-  </div>
-</section>
-
+        {/* Participantes */}
+        <section>
+          <h2 className="text-lg font-medium text-gray-700 border-b pb-2 mb-4">
+            Participantes
+          </h2>
+          <div className="space-y-4">
+            {participantes.map((p, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-1 md:grid-cols-6 gap-3 items-center"
+              >
+                <input
+                  type="text"
+                  placeholder="Nombre"
+                  value={p.nombre}
+                  onChange={e => updateParticipante(i, 'nombre', e.target.value)}
+                  className="md:col-span-2 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                />
+                <input
+                  type="text"
+                  placeholder="Cargo"
+                  value={p.cargo}
+                  onChange={e => updateParticipante(i, 'cargo', e.target.value)}
+                  className="md:col-span-2 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                />
+                <input
+                  type="text"
+                  placeholder="Firma"
+                  value={p.firma}
+                  onChange={e => updateParticipante(i, 'firma', e.target.value)}
+                  className="md:col-span-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeParticipante(i)}
+                  className="btn-eliminar ml-4 rounded-lg p-2"
+                >
+                  <FiTrash2 className="mr-2" />
+                  Eliminar
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={addParticipante}
+              className="inline-flex items-center px-5 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-medium transition"
+            >
+              <FiPlus className="mr-2" /> Agregar participante
+            </button>
+          </div>
+        </section>
 
         {error && (
           <p className="text-red-600">
