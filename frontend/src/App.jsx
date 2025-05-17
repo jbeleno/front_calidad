@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import EmpresasTable from "./components/EmpresasTable";
 import FormulariosEmpresaTable from "./components/FormulariosEmpresaTable";
 import FormularioWizard from "./components/FormularioWizard";
-import './App.css';
 
 export default function App() {
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);

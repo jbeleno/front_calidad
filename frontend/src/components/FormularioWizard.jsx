@@ -3,7 +3,6 @@ import PasoDatosGenerales from "./PasoDatosGenerales";
 import PasoParametros from "./PasoParametros";
 import PasoPreguntas from "./PasoPreguntas";
 import Resultados from "./Resultados";
-import "./FormularioWizard.css";
 
 export default function FormularioWizard({ onClose }) {
   const [step, setStep] = useState(1);
@@ -91,9 +90,12 @@ export default function FormularioWizard({ onClose }) {
   };
 
   return (
-    <div className="wizard-container">
+    <div className="bg-white w-full max-w-[600px] mx-auto my-10 p-8 rounded-xl shadow-lg text-gray-900">
       {onClose && (
-        <button onClick={onClose} style={{ float: "right", marginBottom: 16 }}>
+        <button 
+          className="float-right mb-4 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded transition-colors"
+          onClick={onClose}
+        >
           Volver al inicio
         </button>
       )}
