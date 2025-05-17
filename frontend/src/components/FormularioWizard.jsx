@@ -3,6 +3,7 @@ import PasoDatosGenerales from "./PasoDatosGenerales";
 import PasoParametros from "./PasoParametros";
 import PasoPreguntas from "./PasoPreguntas";
 import Resultados from "./Resultados";
+import { FiArrowLeft } from "react-icons/fi";
 
 export default function FormularioWizard({ onClose }) {
   const [step, setStep] = useState(1);
@@ -90,13 +91,13 @@ export default function FormularioWizard({ onClose }) {
   };
 
   return (
-    <div className="bg-white w-full max-w-[600px] mx-auto my-10 p-8 rounded-xl shadow-lg text-gray-900">
+    <div className="bg-white w-full max-w-5xl mx-auto my-10 p-8 rounded-xl shadow-lg text-gray-900">
       {onClose && (
         <button 
-          className="float-right mb-4 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded transition-colors"
+          className="float-right mb-4 bg-gray-100 hover:bg-gray-200 text-white px-3 py-1 rounded transition-colors inline-flex items-center"
           onClick={onClose}
         >
-          Volver al inicio
+          <FiArrowLeft className="mr-2" /> Volver al inicio
         </button>
       )}
       {mostrarResultados ? (
