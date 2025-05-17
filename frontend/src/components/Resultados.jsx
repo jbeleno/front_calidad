@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
 
 export default function Resultados({ idFormulario, onVolver }) {
   const [parametros, setParametros] = useState([]);
@@ -8,14 +9,17 @@ export default function Resultados({ idFormulario, onVolver }) {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      // 1. Obtener parámetros del formulario
-      const resParam = await fetch(`https://microev-production.up.railway.app/parametros/?id_formulario=${idFormulario}`);
+      const resParam = await fetch(
+        `https://microev-production.up.railway.app/parametros/?id_formulario=${idFormulario}`
+      );
       const params = await resParam.json();
       setParametros(params);
-      // 2. Obtener preguntas para cada parámetro
+
       const preguntasObj = {};
       for (const param of params) {
-        const resPreg = await fetch(`https://microev-production.up.railway.app/preguntas/parametro/${param.id_parametro}`);
+        const resPreg = await fetch(
+          `https://microev-production.up.railway.app/preguntas/parametro/${param.id_parametro}`
+        );
         preguntasObj[param.id_parametro] = await resPreg.json();
       }
       setPreguntasPorParametro(preguntasObj);
@@ -24,81 +28,150 @@ export default function Resultados({ idFormulario, onVolver }) {
     if (idFormulario) fetchData();
   }, [idFormulario]);
 
-  if (loading) return <div>Cargando resultados...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="text-gray-500">Cargando resultados…</span>
+      </div>
+    );
+  }
+
+  // Cálculos de totales
+  const totals = parametros.reduce(
+    (acc, param) => {
+      const lista = preguntasPorParametro[param.id_parametro] || [];
+      const sumObt = lista.reduce((s, p) => s + (p.valor_obtenido || 0), 0);
+      const sumMax = lista.reduce((s, p) => s + (p.valor_maximo || 0), 0);
+      const pct = sumMax > 0 ? (sumObt / sumMax) * 100 : 0;
+      acc.sumaObtenido += sumObt;
+      acc.sumaMaximo += sumMax;
+      acc.sumaPctParam += parseFloat(param.porcentaje_maximo || 0);
+      acc.global += (pct * (param.porcentaje_maximo || 0)) / 100;
+      return acc;
+    },
+    { sumaObtenido: 0, sumaMaximo: 0, sumaPctParam: 0, global: 0 }
+  );
 
   return (
-    <div className="wizard-step">
-      <h2>Resultados del Formulario</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'center' }}>Parámetro</th>
-            <th style={{ textAlign: 'center' }}>Suma valor_obtenido</th>
-            <th style={{ textAlign: 'center' }}>Suma valor_maximo</th>
-            <th style={{ textAlign: 'center' }}>% obtenido</th>
-            <th style={{ textAlign: 'center' }}>% máximo</th>
-            <th style={{ textAlign: 'center' }}>% global</th>
-          </tr>
-        </thead>
-        <tbody>
-          {parametros.map(param => {
-            const preguntas = preguntasPorParametro[param.id_parametro] || [];
-            const sumaObtenido = preguntas.reduce((acc, p) => acc + (p.valor_obtenido || 0), 0);
-            const sumaMaximo = preguntas.reduce((acc, p) => acc + (p.valor_maximo || 0), 0);
-            const porcentaje = sumaMaximo > 0 ? ((sumaObtenido / sumaMaximo) * 100).toFixed(2) : "0.00";
-            return (
-              <tr key={param.id_parametro}>
-                <td style={{ textAlign: 'center' }}>{param.nombre}</td>
-                <td style={{ textAlign: 'center' }}>{sumaObtenido}</td>
-                <td style={{ textAlign: 'center' }}>{sumaMaximo}</td>
-                <td style={{ textAlign: 'center' }}>{porcentaje}%</td>
-                <td style={{ textAlign: 'center' }}>{param.porcentaje_maximo}%</td>
-                <td style={{ textAlign: 'center' }}>{((parseFloat(porcentaje) * parseFloat(param.porcentaje_maximo)) / 100).toFixed(2)}%</td>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-white rounded-xl shadow-xl overflow-hidden w-full max-w-5xl">
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-8 py-6 border-b">
+          <h2 className="text-3xl font-bold text-gray-900">
+            Resultados del Formulario
+          </h2>
+          {onVolver && (
+            <button
+              onClick={onVolver}
+              className="inline-flex items-center space-x-2 bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-lg transition"
+            >
+              <FiArrowLeft />
+              <span>Volver</span>
+            </button>
+          )}
+        </div>
+
+        {/* TABLA */}
+        <div className="overflow-x-auto px-8 py-6">
+          <table className="w-full table-auto border-collapse">
+            <thead className="bg-gray-100 uppercase text-gray-600 text-sm">
+              <tr>
+                {[
+                  "Parámetro",
+                  "Suma obtenido",
+                  "Suma máximo",
+                  "% obtenido",
+                  "% máximo",
+                  "% global",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-center font-semibold"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td style={{ textAlign: 'center', fontWeight: 'bold' }}>Total</td>
-            <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{parametros.reduce((acc, param) => {
-              const preguntas = preguntasPorParametro[param.id_parametro] || [];
-              return acc + preguntas.reduce((a, p) => a + (p.valor_obtenido || 0), 0);
-            }, 0)}</td>
-            <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{parametros.reduce((acc, param) => {
-              const preguntas = preguntasPorParametro[param.id_parametro] || [];
-              return acc + preguntas.reduce((a, p) => a + (p.valor_maximo || 0), 0);
-            }, 0)}</td>
-            <td></td>
-            <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{parametros.reduce((acc, param) => acc + parseFloat(param.porcentaje_maximo || 0), 0)}%</td>
-            <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{parametros.reduce((acc, param) => {
-              const preguntas = preguntasPorParametro[param.id_parametro] || [];
-              const sumaObtenido = preguntas.reduce((a, p) => a + (p.valor_obtenido || 0), 0);
-              const sumaMaximo = preguntas.reduce((a, p) => a + (p.valor_maximo || 0), 0);
-              const porcentaje = sumaMaximo > 0 ? ((sumaObtenido / sumaMaximo) * 100) : 0;
-              return acc + ((porcentaje * parseFloat(param.porcentaje_maximo || 0)) / 100);
-            }, 0).toFixed(2)}%</td>
-          </tr>
-        </tfoot>
-      </table>
-      <div style={{
-        padding: '16px',
-        marginTop: '24px',
-        marginBottom: '24px',
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontSize: '0.9rem'
-      }}>
-        RESULTADO DEL EJERCICIO<br />
-        <span style={{ color: 'red', fontWeight: 'bold' }}>0 A 30% DEFICIENTE</span><br />
-        <span style={{ color: 'purple', fontWeight: 'bold' }}>31 A 50% INSUFICIENTE</span><br />
-        <span style={{ color: 'olive', fontWeight: 'bold' }}>51 A 70% ACEPTABLE</span><br />
-        <span style={{ color: 'teal', fontWeight: 'bold' }}>71 A 89% SOBRESALIENTE</span><br />
-        <span style={{ color: 'darkcyan', fontWeight: 'bold' }}>MAS DE 90% EXCELENTE</span>
-      </div>
-      <div className="wizard-buttons" style={{ marginTop: 24 }}>
-        {onVolver && <button onClick={onVolver}>Volver</button>}
+            </thead>
+            <tbody className="text-gray-800">
+              {parametros.map((param) => {
+                const lista = preguntasPorParametro[param.id_parametro] || [];
+                const sumObt = lista.reduce(
+                  (s, p) => s + (p.valor_obtenido || 0),
+                  0
+                );
+                const sumMax = lista.reduce(
+                  (s, p) => s + (p.valor_maximo || 0),
+                  0
+                );
+                const pct = sumMax > 0 ? (sumObt / sumMax) * 100 : 0;
+                const globalPct =
+                  ((pct * param.porcentaje_maximo) / 100) || 0;
+
+                return (
+                  <tr
+                    key={param.id_parametro}
+                    className="odd:bg-white even:bg-gray-50 hover:bg-gray-100 transition"
+                  >
+                    <td className="px-4 py-3 text-center">
+                      {param.nombre}
+                    </td>
+                    <td className="px-4 py-3 text-center">{sumObt}</td>
+                    <td className="px-4 py-3 text-center">{sumMax}</td>
+                    <td className="px-4 py-3 text-center">
+                      {pct.toFixed(2)}%
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {param.porcentaje_maximo}%
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {globalPct.toFixed(2)}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot className="bg-gray-100 text-gray-900 font-semibold">
+              <tr>
+                <td className="px-4 py-3 text-center">Total</td>
+                <td className="px-4 py-3 text-center">
+                  {totals.sumaObtenido}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {totals.sumaMaximo}
+                </td>
+                <td className="px-4 py-3" />
+                <td className="px-4 py-3 text-center">
+                  {totals.sumaPctParam.toFixed(0)}%
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {totals.global.toFixed(2)}%
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        {/* LEYENDA */}
+        <div className="px-8 pb-8 text-center space-y-2">
+          <p className="text-lg font-semibold text-gray-800">
+            RESULTADO DEL EJERCICIO
+          </p>
+          <p className="text-red-600 font-medium">0 A 30% DEFICIENTE</p>
+          <p className="text-purple-600 font-medium">
+            31 A 50% INSUFICIENTE
+          </p>
+          <p className="text-yellow-600 font-medium">
+            51 A 70% ACEPTABLE
+          </p>
+          <p className="text-teal-600 font-medium">
+            71 A 89% SOBRESALIENTE
+          </p>
+          <p className="text-green-600 font-medium">
+            MÁS DE 90% EXCELENTE
+          </p>
+        </div>
       </div>
     </div>
   );
-} 
+}
