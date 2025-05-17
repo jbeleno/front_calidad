@@ -1,299 +1,319 @@
 import React, { useEffect, useState } from "react";
+import { FiArrowLeft, FiTrash2, FiPlus } from "react-icons/fi";
 
-export default function PasoPreguntas({ preguntas, onChange, onBack, onSubmit, idFormulario, parametros }) {
+export default function PasoPreguntas({
+  onBack,
+  onSubmit,
+  parametros,
+}) {
   const [preguntasPredeterminadas, setPreguntasPredeterminadas] = useState([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    // Traer todas las preguntas predeterminadas
-    fetch("https://microev-production.up.railway.app/preguntas_predeterminadas/")
-      .then(res => res.json())
-      .then(data => setPreguntasPredeterminadas(data));
-  }, []);
-
-  // Estado local: preguntas por parámetro
   const [preguntasPorParametro, setPreguntasPorParametro] = useState(() => {
-    // Inicializar con los parámetros recibidos
     const obj = {};
-    (parametros || []).forEach((param, idx) => {
-      obj[param.id_parametro || idx] = [];
+    (parametros || []).forEach((param) => {
+      obj[param.id_parametro] = [];
     });
     return obj;
   });
-
-  // Estado local: observaciones por pregunta (clave: id temporal de pregunta en frontend)
   const [observacionesPorPregunta, setObservacionesPorPregunta] = useState({});
+  const [error, setError] = useState("");
 
-  // Agregar pregunta predeterminada
-  const handleAddPredeterminada = (idParametro, preguntaPred) => {
-    setPreguntasPorParametro(prev => {
-      const yaExiste = prev[idParametro].some(p => p.id_pregunta_predeterminada === preguntaPred.id_pregunta_predeterminada);
-      if (yaExiste) return prev; // No duplicar
+  useEffect(() => {
+    fetch("https://microev-production.up.railway.app/preguntas_predeterminadas/")
+      .then((r) => r.json())
+      .then(setPreguntasPredeterminadas)
+      .catch(console.error);
+  }, []);
+
+  const handleAddPredeterminada = (idParam, preguntaPred) => {
+    setPreguntasPorParametro((prev) => {
+      if (
+        prev[idParam].some(
+          (p) => p.id_pregunta_predeterminada === preguntaPred.id_pregunta_predeterminada
+        )
+      ) {
+        return prev;
+      }
       return {
         ...prev,
-        [idParametro]: [
-          ...prev[idParametro],
+        [idParam]: [
+          ...prev[idParam],
           {
             id_pregunta_predeterminada: preguntaPred.id_pregunta_predeterminada,
             nombre: preguntaPred.nombre,
             descripcion: preguntaPred.descripcion,
-            valor: ""
-          }
-        ]
+            valor: "",
+          },
+        ],
       };
     });
   };
 
-  // Agregar pregunta manual
-  const handleAddManual = (idParametro) => {
-    setPreguntasPorParametro(prev => ({
+  const handleAddManual = (idParam) => {
+    setPreguntasPorParametro((prev) => ({
       ...prev,
-      [idParametro]: [
-        ...prev[idParametro],
-        { id_pregunta_predeterminada: null, nombre: "", descripcion: "", valor: "" }
-      ]
+      [idParam]: [
+        ...prev[idParam],
+        { id_pregunta_predeterminada: null, nombre: "", descripcion: "", valor: "" },
+      ],
     }));
   };
 
-  // Editar pregunta
-  const handleInput = (idParametro, idx, field, value) => {
-    setPreguntasPorParametro(prev => {
-      const nuevas = prev[idParametro].slice();
-      nuevas[idx][field] = value;
-      return { ...prev, [idParametro]: nuevas };
+  const handleInput = (idParam, idx, field, value) =>
+    setPreguntasPorParametro((prev) => {
+      const copy = [...prev[idParam]];
+      copy[idx] = { ...copy[idx], [field]: value };
+      return { ...prev, [idParam]: copy };
+    });
+
+  const handleDelete = (idParam, idx) =>
+    setPreguntasPorParametro((prev) => {
+      const copy = [...prev[idParam]];
+      copy.splice(idx, 1);
+      return { ...prev, [idParam]: copy };
+    });
+
+  const handleAddObservacion = (idParam, idx) => {
+    const key = `${idParam}_${idx}`;
+    setObservacionesPorPregunta((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] || []), ""],
+    }));
+  };
+
+  const handleObservacionChange = (idParam, idx, obsIdx, value) => {
+    const key = `${idParam}_${idx}`;
+    setObservacionesPorPregunta((prev) => {
+      const copy = [...(prev[key] || [])];
+      copy[obsIdx] = value;
+      return { ...prev, [key]: copy };
     });
   };
 
-  // Eliminar pregunta
-  const handleDelete = (idParametro, idx) => {
-    setPreguntasPorParametro(prev => {
-      const nuevas = prev[idParametro].slice();
-      nuevas.splice(idx, 1);
-      return { ...prev, [idParametro]: nuevas };
-    });
-    setObservacionesPorPregunta(prev => {
-      const nuevo = { ...prev };
-      delete nuevo[`${idParametro}_${idx}`];
-      return nuevo;
+  const handleDeleteObservacion = (idParam, idx, obsIdx) => {
+    const key = `${idParam}_${idx}`;
+    setObservacionesPorPregunta((prev) => {
+      const copy = [...(prev[key] || [])];
+      copy.splice(obsIdx, 1);
+      return { ...prev, [key]: copy };
     });
   };
 
-  // Manejar observaciones
-  const handleAddObservacion = (idParametro, idx) => {
-    setObservacionesPorPregunta(prev => {
-      const key = `${idParametro}_${idx}`;
-      return {
-        ...prev,
-        [key]: [...(prev[key] || []), ""]
-      };
-    });
-  };
-
-  const handleObservacionChange = (idParametro, idx, obsIdx, value) => {
-    setObservacionesPorPregunta(prev => {
-      const key = `${idParametro}_${idx}`;
-      const nuevas = [...(prev[key] || [])];
-      nuevas[obsIdx] = value;
-      return { ...prev, [key]: nuevas };
-    });
-  };
-
-  const handleDeleteObservacion = (idParametro, idx, obsIdx) => {
-    setObservacionesPorPregunta(prev => {
-      const key = `${idParametro}_${idx}`;
-      const nuevas = [...(prev[key] || [])];
-      nuevas.splice(obsIdx, 1);
-      return { ...prev, [key]: nuevas };
-    });
-  };
-
-  // Guardar en backend
-  const handleFinalizar = async () => {
-    // Validar que todas las preguntas tengan nombre, descripción y valor
-    for (const idParametro in preguntasPorParametro) {
-      for (const p of preguntasPorParametro[idParametro]) {
+  const handleFinalizar = () => {
+    // validaciones intactas...
+    for (const idParam in preguntasPorParametro) {
+      for (const p of preguntasPorParametro[idParam]) {
         if (!p.nombre || !p.descripcion || !p.valor) {
-          setError("Todas las preguntas deben tener pregunta, descripción y valor.");
+          setError("Todas las preguntas deben tener texto, descripción y valor.");
           return;
         }
       }
     }
     setError("");
-    // Guardar en backend
-    for (const idParametro in preguntasPorParametro) {
-      for (let idx = 0; idx < preguntasPorParametro[idParametro].length; idx++) {
-        const p = preguntasPorParametro[idParametro][idx];
-        try {
-          const res = await fetch("https://microev-production.up.railway.app/preguntas/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id_parametro: idParametro,
-              id_pregunta_predeterminada: p.id_pregunta_predeterminada || null,
-              nombre: p.nombre,
-              descripcion: p.descripcion,
-              valor_obtenido: parseFloat(p.valor),
-              valor_maximo: parseFloat(3)
-            })
-          });
-          if (!res.ok) throw new Error("Error creando pregunta");
-          const preguntaCreada = await res.json();
-          // Guardar observaciones asociadas a esta pregunta
-          const key = `${idParametro}_${idx}`;
-          const observaciones = observacionesPorPregunta[key] || [];
-          for (const texto_observacion of observaciones) {
-            if (texto_observacion && texto_observacion.trim() !== "") {
-              await fetch("https://microev-production.up.railway.app/observaciones/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id_pregunta: preguntaCreada.id_pregunta,
-                  texto_observacion
-                })
-              });
-            }
-          }
-        } catch (err) {
-          setError("No se pudo crear una pregunta u observación: " + err.message);
-          return;
-        }
-      }
-    }
-    onSubmit();
+    onSubmit(preguntasPorParametro, observacionesPorPregunta);
   };
 
   return (
-    <div className="wizard-step">
-      <h2>Preguntas por Parámetro</h2>
-      <div style={{
-        padding: '16px',
-        marginBottom: '24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start'
-      }}>
-        <span style={{ fontWeight: 'normal', marginRight: '32px' }}>
-          CRITERIO DEL VALOR DE LA EVALUACION
-        </span>
-        <span style={{ textAlign: 'left', whiteSpace: 'pre-line' }}>
-          0 No cumple de 0% a un 30%{"\n"}
-          1 Cumple de 31% a 50%{"\n"}
-          2 Cumple de 51% a 89%{"\n"}
-          3 Cumple con o más del 90%
-        </span>
+    <>
+      {/* HEADER */}
+      <div className="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Preguntas por Parámetro</h2>
       </div>
-      {(parametros || []).map((param, idx) => (
-        <div key={param.id_parametro || idx} style={{marginBottom: 32, border: '1px solid #ccc', borderRadius: 8, padding: 16}}>
-          <h3>Parámetro: {param.nombre}</h3>
-          {/* Preguntas predeterminadas disponibles para este parámetro */}
-          {param.id_parametro_predeterminado && (
-            <div style={{marginBottom: 8}}>
-              <strong>Agregar pregunta predeterminada:</strong>
-              <select
-                onChange={e => {
-                  const pregunta = preguntasPredeterminadas.find(
-                    q => q.id_pregunta_predeterminada === parseInt(e.target.value)
-                  );
-                  if (pregunta) handleAddPredeterminada(param.id_parametro || idx, pregunta);
-                }}
-                defaultValue=""
-              >
-                <option value="">Selecciona una pregunta</option>
-                {preguntasPredeterminadas
-                  .filter(q => q.id_parametro_predeterminado === parseInt(param.id_parametro_predeterminado))
-                  .map(q => (
-                    <option key={q.id_pregunta_predeterminada} value={q.id_pregunta_predeterminada}>
-                      {q.nombre}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          )}
-          {/* Tabla de preguntas */}
-          <table style={{width: '100%', marginBottom: 8}}>
-            <thead>
-              <tr>
-                <th>Pregunta</th>
-                <th>Descripción</th>
-                <th>Valor</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {(preguntasPorParametro[param.id_parametro || idx] || []).map((p, i) => (
-                <React.Fragment key={i}>
-                  <tr>
-                    <td>
-                      <input
-                        value={p.nombre}
-                        onChange={e => handleInput(param.id_parametro || idx, i, "nombre", e.target.value)}
-                        placeholder="Pregunta"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        value={p.descripcion}
-                        onChange={e => handleInput(param.id_parametro || idx, i, "descripcion", e.target.value)}
-                        placeholder="Descripción"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        value={p.valor}
-                        onChange={e => {
-                          const v = e.target.value;
-                          if (v === '' || (Number(v) >= 0 && Number(v) <= 3 && Number.isInteger(Number(v)))) {
-                            handleInput(param.id_parametro || idx, i, "valor", v);
-                          }
-                        }}
-                        placeholder="Valor"
-                        type="number"
-                        min={0}
-                        max={3}
-                        step={1}
-                      />
-                    </td>
-                    <td>
-                      <button type="button" onClick={() => handleDelete(param.id_parametro || idx, i)}>Eliminar</button>
-                    </td>
-                  </tr>
-                  {/* Observaciones para esta pregunta */}
-                  <tr>
-                    <td colSpan={4}>
-                      <div style={{ marginLeft: 16 }}>
-                        <strong>Observaciones:</strong>
-                        {(observacionesPorPregunta[`${param.id_parametro || idx}_${i}`] || []).map((obs, obsIdx) => (
-                          <div key={obsIdx} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                            <input
-                              type="text"
-                              value={obs}
-                              onChange={e => handleObservacionChange(param.id_parametro || idx, i, obsIdx, e.target.value)}
-                              placeholder="Observación"
-                              style={{ flex: 1, marginRight: 8 }}
-                            />
-                            <button type="button" onClick={() => handleDeleteObservacion(param.id_parametro || idx, i, obsIdx)}>
-                              Eliminar
-                            </button>
-                          </div>
-                        ))}
-                        <button type="button" onClick={() => handleAddObservacion(param.id_parametro || idx, i)}>
-                          Agregar observación
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-          <button type="button" onClick={() => handleAddManual(param.id_parametro || idx)}>Agregar pregunta manual</button>
+
+      {/* CRITERIOS */}
+      <div className="px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-200 bg-white">
+        <div>
+          <p className="text-gray-700 font-semibold mb-2">CRITERIO DEL VALOR DE LA EVALUACIÓN</p>
+          <ul className="text-gray-700 text-base space-y-1 list-disc list-inside">
+            <li><span className="font-bold">0</span> No cumple de 0% a un 30%</li>
+            <li><span className="font-bold">1</span> Cumple de 31% a 50%</li>
+            <li><span className="font-bold">2</span> Cumple de 51% a 89%</li>
+            <li><span className="font-bold">3</span> Cumple con o más del 90%</li>
+          </ul>
         </div>
-      ))}
-      <div className="wizard-buttons">
-        <button onClick={onBack}>Atrás</button>
-        {error && <div style={{color: 'red', marginBottom: 8}}>{error}</div>}
-        <button onClick={handleFinalizar}>Finalizar</button>
       </div>
-    </div>
+
+      {/* BODY */}
+      <div className="py-8 space-y-8">
+        {parametros.map((param) => {
+          const idParam = param.id_parametro;
+          const idPred = param.id_parametro_predeterminado;
+          const lista = preguntasPorParametro[idParam] || [];
+
+          return (
+            <div key={idParam} className="bg-gray-50 border border-gray-200 rounded-2xl shadow-md p-6 space-y-6 transition hover:shadow-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                Parámetro: <span className="ml-1 font-semibold">{param.nombre}</span>
+              </h3>
+
+              {/* Selección predeterminada */}
+              {idPred && (
+                <div className="space-y-2">
+                  <label className="block font-medium text-gray-700 mb-1">
+                    Agregar pregunta predeterminada:
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <select
+                      onChange={(e) => {
+                        const sel = preguntasPredeterminadas.find(
+                          (q) => q.id_pregunta_predeterminada === +e.target.value
+                        );
+                        if (sel) handleAddPredeterminada(idParam, sel);
+                      }}
+                      defaultValue=""
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                    >
+                      <option value="">Selecciona una pregunta…</option>
+                      {preguntasPredeterminadas
+                        .filter((q) => q.id_parametro_predeterminado === idPred)
+                        .map((q) => (
+                          <option key={q.id_pregunta_predeterminada} value={q.id_pregunta_predeterminada}>
+                            {q.nombre}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Tabla de preguntas */}
+              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+                <table className="w-full table-auto border-collapse text-base">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      {[
+                        "Pregunta",
+                        "Descripción",
+                        "Valor",
+                        "",
+                      ].map((h) => (
+                        <th key={h} className="border-b border-gray-200 px-4 py-3 text-left text-gray-700 font-semibold">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lista.map((p, idx) => {
+                      const key = `${idParam}_${idx}`;
+                      return (
+                        <React.Fragment key={key}>
+                          <tr className="even:bg-gray-50">
+                            <td className="px-4 py-3 align-top">
+                              <input
+                                value={p.nombre}
+                                onChange={(e) => handleInput(idParam, idx, "nombre", e.target.value)}
+                                placeholder="Pregunta"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                              />
+                            </td>
+                            <td className="px-4 py-3 align-top">
+                              <input
+                                value={p.descripcion}
+                                onChange={(e) => handleInput(idParam, idx, "descripcion", e.target.value)}
+                                placeholder="Descripción"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                              />
+                            </td>
+                            <td className="px-4 py-3 align-top w-24">
+                              <input
+                                value={p.valor}
+                                onChange={(e) => handleInput(idParam, idx, "valor", e.target.value)}
+                                type="number"
+                                min={0}
+                                max={3}
+                                placeholder="0–3"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                              />
+                            </td>
+                            <td className="px-4 py-3 align-top w-32">
+                              <button
+                                onClick={() => handleDelete(idParam, idx)}
+                                className="inline-flex items-center btn-eliminar"
+                              >
+                                <FiTrash2 className="mr-1" />
+                                Eliminar
+                              </button>
+                            </td>
+                          </tr>
+
+                          {/* Observaciones */}
+                          <tr>
+                            <td colSpan={4} className="px-4 pb-4 pt-0">
+                              <div className="space-y-2">
+                                {(observacionesPorPregunta[key] || []).map((obs, obsIdx) => (
+                                  <div key={obsIdx} className="flex gap-2 items-center">
+                                    <input
+                                      value={obs}
+                                      onChange={(e) =>
+                                        handleObservacionChange(idParam, idx, obsIdx, e.target.value)
+                                      }
+                                      placeholder="Observación"
+                                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                                    />
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteObservacion(idParam, idx, obsIdx)
+                                      }
+                                      className="inline-flex items-center btn-eliminar"
+                                    >
+                                      <FiTrash2 />
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  onClick={() => handleAddObservacion(idParam, idx)}
+                                  className="inline-flex items-center bg-blue-100 hover:bg-blue-200 text-blue-800 px-5 py-2 rounded-lg transition font-semibold"
+                                >
+                                  <FiPlus className="mr-1" />
+                                  Agregar observación
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => handleAddManual(idParam)}
+                  className="inline-flex items-center bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-full font-semibold text-lg shadow transition"
+                >
+                  <FiPlus className="mr-2 text-xl" />
+                  Agregar pregunta manual
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-8 py-6 border-t border-gray-200 bg-gradient-to-r from-white to-blue-50 flex flex-col md:flex-row items-center justify-end gap-4 mt-8">
+        {error && (
+          <div className="flex-1 flex justify-center">
+            <p className="bg-red-50 border border-red-300 text-red-700 px-6 py-3 rounded-lg text-center font-semibold shadow animate-shake">
+              {error}
+            </p>
+          </div>
+        )}
+        <button
+          onClick={onBack}
+          className="px-8 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg transition shadow"
+        >
+          Atrás
+        </button>
+        <button
+          onClick={handleFinalizar}
+          className="px-8 py-3 rounded-lg bg-black hover:bg-gray-800 text-white font-semibold text-lg transition shadow ml-auto"
+        >
+          Finalizar
+        </button>
+      </div>
+    </>
   );
 }
