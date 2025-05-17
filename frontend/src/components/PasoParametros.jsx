@@ -1,162 +1,194 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
-export default function PasoParametros({ parametros, onChange, onNext, onBack, idFormulario }) {
+export default function PasoParametros({ parametros, onChange, onNext, onBack }) {
   const [parametrosPredeterminados, setParametrosPredeterminados] = useState([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    fetch("https://microev-production.up.railway.app/parametros_predeterminados/") // Ajusta el puerto si es necesario
-      .then(res => res.json())
-      .then(data => setParametrosPredeterminados(data));
+    fetch('https://microev-production.up.railway.app/parametros_predeterminados/')
+      .then(r => r.json())
+      .then(setParametrosPredeterminados)
+      .catch(console.error);
   }, []);
 
   const handleAddParametro = () => {
-    // Si el usuario seleccionó un parámetro predeterminado ya existente, no lo agregues
-    const idsExistentes = parametros.map(p => Number(p.id_parametro_predeterminado));
-    const idNuevo = ""; // o el valor seleccionado si lo tienes
-    if (idNuevo && idsExistentes.includes(idNuevo)) {
-      setError("Ese parámetro predeterminado ya fue agregado.");
-      return;
-    }
-    onChange([
+    const nuevos = [
       ...parametros,
-      {
-        id_parametro_predeterminado: "",
-        nombre: "",
-        descripcion: "",
-        porcentaje_maximo: "",
-        porcentaje_obtenido: ""
-      }
-    ]);
+      { id_parametro_predeterminado: '', nombre: '', descripcion: '', porcentaje_maximo: '', porcentaje_obtenido: '' }
+    ];
+    onChange(nuevos);
   };
 
-  const handleSelect = (i, e) => {
+  const handleSelect = (idx, e) => {
     const id = e.target.value;
-    const seleccionado = parametrosPredeterminados.find(p => p.id_parametro_predeterminado === parseInt(id));
+    const sel = parametrosPredeterminados.find(p => p.id_parametro_predeterminado === +id) || {};
     const nuevos = parametros.slice();
-    nuevos[i] = {
-      ...nuevos[i],
-      id_parametro_predeterminado: id ? parseInt(id) : null,
-      nombre: seleccionado ? seleccionado.nombre : "",
-      descripcion: seleccionado ? seleccionado.descripcion : "",
+    nuevos[idx] = {
+      ...nuevos[idx],
+      id_parametro_predeterminado: id ? +id : '',
+      nombre: sel.nombre || '',
+      descripcion: sel.descripcion || ''
     };
     onChange(nuevos);
   };
 
-  const handleInput = (i, e) => {
+  const handleInput = (idx, e) => {
+    const { name, value } = e.target;
     const nuevos = parametros.slice();
-    nuevos[i][e.target.name] = e.target.value;
+    nuevos[idx][name] = value;
     onChange(nuevos);
   };
 
-  // Validación de suma de porcentajes y guardado en backend
-  const handleNext = async () => {
+  const handleNextClick = async () => {
     if (guardando) return;
     setGuardando(true);
-    console.log("Guardando parámetros...");
+
     const suma = parametros.reduce((acc, p) => acc + (parseFloat(p.porcentaje_maximo) || 0), 0);
     if (suma > 100) {
-      setError("La suma de los porcentajes no puede ser mayor a 100%.");
+      setError('La suma de los porcentajes no puede ser mayor a 100%.');
       setGuardando(false);
       return;
     }
     if (suma < 100) {
-      setError("La suma de los porcentajes debe ser exactamente 100%.");
+      setError('La suma de los porcentajes debe ser exactamente 100%.');
       setGuardando(false);
       return;
     }
-    // Validar que si no hay predeterminado, nombre y descripción sean obligatorios
+
     for (const p of parametros) {
       if (!p.id_parametro_predeterminado && (!p.nombre || !p.descripcion)) {
-        setError("Si no seleccionas un parámetro predeterminado, debes llenar nombre y descripción.");
+        setError('Si no seleccionas un parámetro predeterminado, debes llenar nombre y descripción.');
         setGuardando(false);
         return;
       }
       if (!p.porcentaje_maximo) {
-        setError("Todos los parámetros deben tener porcentaje máximo.");
+        setError('Todos los parámetros deben tener porcentaje máximo.');
         setGuardando(false);
         return;
       }
     }
-    setError("");
-    // Guardar en backend
-    const parametrosUnicos = parametros.filter(
-      (p, idx, arr) =>
-        arr.findIndex(x =>
-          Number(x.id_parametro_predeterminado) === Number(p.id_parametro_predeterminado) &&
-          x.nombre === p.nombre
-        ) === idx
-    );
 
-    // Validar que no haya parámetros repetidos por id_parametro_predeterminado y nombre
-    const combinaciones = new Set();
-    for (const p of parametrosUnicos) {
-      const clave = `${p.id_parametro_predeterminado || ""}-${p.nombre.trim().toLowerCase()}`;
-      if (combinaciones.has(clave)) {
-        setError("No puedes agregar parámetros repetidos (misma combinación de predeterminado y nombre).");
+    // Validación de duplicados
+    const llaves = new Set();
+    for (const p of parametros) {
+      const key = `${p.id_parametro_predeterminado}-${p.nombre.trim().toLowerCase()}`;
+      if (llaves.has(key)) {
+        setError('No puedes agregar parámetros repetidos.');
         setGuardando(false);
         return;
       }
-      combinaciones.add(clave);
+      llaves.add(key);
     }
 
-    console.log("Parámetros que se enviarán al backend:", parametrosUnicos);
+    setError('');
+    // Aquí iría la lógica de guardado en backend si fuese necesaria...
     onNext();
     setGuardando(false);
   };
 
   return (
-    <div className="wizard-step">
-      <h2>Parámetros y Porcentaje</h2>
-      {parametros.map((p, i) => (
-        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: 'flex-start' }}>
-          <div style={{flex: 2}}>
-            <select
-              value={p.id_parametro_predeterminado || ""}
-              onChange={e => handleSelect(i, e)}
+    <div>
+      {/* Header */}
+      <div className="px-6 py-4 border-b">
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Parámetros y Porcentaje
+        </h1>
+      </div>
+
+      {/* Body */}
+      <div className="px-6 py-6 space-y-6">
+        {parametros.map((p, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start"
+          >
+            {/* Select + descripción */}
+            <div className="md:col-span-4">
+              <select
+                value={p.id_parametro_predeterminado || ''}
+                onChange={e => handleSelect(i, e)}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+              >
+                <option value="">Selecciona un parámetro</option>
+                {parametrosPredeterminados.map(pp => (
+                  <option
+                    key={pp.id_parametro_predeterminado}
+                    value={pp.id_parametro_predeterminado}
+                  >
+                    {pp.nombre}
+                  </option>
+                ))}
+              </select>
+              {p.descripcion && (
+                <p className="mt-2 text-gray-600 text-sm">
+                  {p.descripcion}
+                </p>
+              )}
+            </div>
+
+            {/* Porcentaje máximo */}
+            <input
+              name="porcentaje_maximo"
+              type="number"
+              placeholder="%" 
+              value={p.porcentaje_maximo}
+              onChange={e => handleInput(i, e)}
+              className="md:col-span-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-black"
+            />
+
+            {/* Eliminar */}
+            <button
+              type="button"
+              onClick={() => {
+                const nuevos = parametros.slice();
+                nuevos.splice(i, 1);
+                onChange(nuevos);
+              }}
+              className="btn-eliminar md:col-span-1 ml-4 rounded-lg px-4 py-2"
             >
-              <option value="">Selecciona un parámetro</option>
-              {parametrosPredeterminados.map(pp => (
-                <option key={pp.id_parametro_predeterminado} value={pp.id_parametro_predeterminado}>
-                  {pp.nombre}
-                </option>
-              ))}
-            </select>
-            {/* Mostrar descripción solo si hay parámetro seleccionado */}
-            {p.id_parametro_predeterminado && p.descripcion && (
-              <div style={{fontSize: '0.95em', color: '#555', marginTop: 4, marginBottom: 4}}>
-                {p.descripcion}
-              </div>
-            )}
+              <FiTrash2 className="mr-2" />
+              Eliminar
+            </button>
           </div>
-          <input
-            name="porcentaje_maximo"
-            placeholder="Porcentaje máximo"
-            value={p.porcentaje_maximo || ""}
-            onChange={e => handleInput(i, e)}
-            type="number"
-            style={{ width: 100 }}
-          />
-          {/* Botón eliminar */}
+        ))}
+
+        {/* Agregar parámetro */}
+        <div>
           <button
             type="button"
-            style={{ background: "#e74c3c", color: "#fff", border: "none", borderRadius: 4, padding: "0 12px", cursor: "pointer" }}
-            onClick={() => {
-              const nuevos = parametros.slice();
-              nuevos.splice(i, 1);
-              onChange(nuevos);
-            }}
+            onClick={handleAddParametro}
+            className="inline-flex items-center px-5 py-2 rounded-lg bg-black hover:bg-gray-800 text-white font-medium transition"
           >
-            Eliminar
+            <FiPlus className="mr-2" />
+            Agregar parámetro
           </button>
         </div>
-      ))}
-      <button onClick={handleAddParametro} style={{ marginBottom: 16 }}>Agregar parámetro</button>
-      <div className="wizard-buttons">
-        <button onClick={onBack}>Atrás</button>
-        {error && <div style={{color: 'red', marginBottom: 8}}>{error}</div>}
-        <button onClick={handleNext} disabled={guardando}>Siguiente</button>
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 border-t flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
+        >
+          Atrás
+        </button>
+
+        {error && (
+          <p className="text-red-600 text-center flex-1 mx-4">
+            {error}
+          </p>
+        )}
+
+        <button
+          onClick={handleNextClick}
+          disabled={guardando}
+          className="px-6 py-3 rounded-lg bg-black hover:bg-gray-800 text-white font-semibold transition ml-auto"
+        >
+          {guardando ? 'Guardando...' : 'Siguiente'}
+        </button>
       </div>
     </div>
   );
