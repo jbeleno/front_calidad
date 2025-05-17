@@ -5,9 +5,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* color-scheme: light dark; */
+  color: rgba(33, 53, 71, 1);
+  background-color: #fff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -30,6 +30,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #fff !important;
 }
 
 h1 {
@@ -116,3 +117,80 @@ button:focus-visible {
 .read-the-docs {
   color: #888;
 }
+
+.btn-eliminar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;            /* que no llene todo el grid-cell */
+  padding: 0.5rem;        /* ajusta 0.5rem = 8px según tu espaciado */
+  background-color: #dc2626; /* rojo-600 */
+  color: #fff;            /* icono y texto blancos */
+  border: none;
+  transition: background 0.2s;
+}
+
+.btn-eliminar:hover {
+  background-color: #b91c1c; /* rojo-700 */
+}
+
+/* asegúrate de que el SVG herede el color */
+.btn-eliminar svg {
+  color: inherit;
+  width: 1.25rem;  /* tamaño de icono (20px) */
+  height: 1.25rem;
+}
+
+.wizard-container {
+    background: #fff;
+    width: 100%;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 32px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+    color: #111;
+  }
+  
+  .wizard-step {
+    margin-bottom: 24px;
+    color: #111;
+  }
+  
+  .wizard-step label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: bold;
+    color: #111;
+  }
+  
+  .wizard-step input, .wizard-step select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    color: #ffffff;
+  }
+  
+  .wizard-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+  }
+  
+  .wizard-buttons button {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .wizard-buttons button:hover {
+    background: #1251a3;
+  }
