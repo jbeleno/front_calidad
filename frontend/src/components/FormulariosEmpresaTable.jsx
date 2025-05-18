@@ -155,7 +155,7 @@ export default function FormulariosEmpresaTable({
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
+              className="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm text-white hover:bg-gray-100 disabled:opacity-50 transition"
             >
               Anterior
             </button>
@@ -167,7 +167,7 @@ export default function FormulariosEmpresaTable({
                 setCurrentPage((p) => Math.min(p + 1, totalPages))
               }
               disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition"
+              className="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm text-white hover:bg-gray-100 disabled:opacity-50 transition"
             >
               Siguiente
             </button>

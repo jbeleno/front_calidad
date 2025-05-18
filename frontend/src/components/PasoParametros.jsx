@@ -14,38 +14,47 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
   }, []);
 
   const handleAddParametro = () => {
-    const nuevos = [
+    onChange([
       ...parametros,
-      { id_parametro_predeterminado: '', nombre: '', descripcion: '', porcentaje_maximo: '', porcentaje_obtenido: '' }
-    ];
-    onChange(nuevos);
+      {
+        id_parametro_predeterminado: '',
+        nombre: '',
+        descripcion: '',
+        porcentaje_maximo: '',
+        porcentaje_obtenido: ''
+      }
+    ]);
   };
 
   const handleSelect = (idx, e) => {
     const id = e.target.value;
     const sel = parametrosPredeterminados.find(p => p.id_parametro_predeterminado === +id) || {};
-    const nuevos = parametros.slice();
-    nuevos[idx] = {
-      ...nuevos[idx],
+    const copia = [...parametros];
+    copia[idx] = {
+      ...copia[idx],
       id_parametro_predeterminado: id ? +id : '',
       nombre: sel.nombre || '',
       descripcion: sel.descripcion || ''
     };
-    onChange(nuevos);
+    onChange(copia);
   };
 
   const handleInput = (idx, e) => {
     const { name, value } = e.target;
-    const nuevos = parametros.slice();
-    nuevos[idx][name] = value;
-    onChange(nuevos);
+    const copia = [...parametros];
+    copia[idx][name] = value;
+    onChange(copia);
   };
 
   const handleNextClick = async () => {
     if (guardando) return;
     setGuardando(true);
 
-    const suma = parametros.reduce((acc, p) => acc + (parseFloat(p.porcentaje_maximo) || 0), 0);
+    // 1. Validaciones de suma
+    const suma = parametros.reduce(
+      (acc, p) => acc + (parseFloat(p.porcentaje_maximo) || 0),
+      0
+    );
     if (suma > 100) {
       setError('La suma de los porcentajes no puede ser mayor a 100%.');
       setGuardando(false);
@@ -57,6 +66,7 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
       return;
     }
 
+    // 2. Validaciones de campos obligatorios
     for (const p of parametros) {
       if (!p.id_parametro_predeterminado && (!p.nombre || !p.descripcion)) {
         setError('Si no seleccionas un parámetro predeterminado, debes llenar nombre y descripción.');
@@ -70,20 +80,32 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
       }
     }
 
-    // Validación de duplicados
+    // 3. Validación de duplicados
     const llaves = new Set();
     for (const p of parametros) {
-      const key = `${p.id_parametro_predeterminado}-${p.nombre.trim().toLowerCase()}`;
-      if (llaves.has(key)) {
+      const clave = `${p.id_parametro_predeterminado}-${p.nombre.trim().toLowerCase()}`;
+      if (llaves.has(clave)) {
         setError('No puedes agregar parámetros repetidos.');
         setGuardando(false);
         return;
       }
-      llaves.add(key);
+      llaves.add(clave);
     }
 
+    // 4. Filtrar parámetros únicos igual que en la versión original
+    const parametrosUnicos = parametros.filter((p, idx, arr) =>
+      arr.findIndex(x =>
+        Number(x.id_parametro_predeterminado) === Number(p.id_parametro_predeterminado) &&
+        x.nombre === p.nombre
+      ) === idx
+    );
+
+    // 5. (Opcional) Log para depurar
+    console.log('Guardando parámetros...');
+    console.log('Parámetros que se enviarán al backend:', parametrosUnicos);
+
+    // 6. Limpiar error y avanzar
     setError('');
-    // Aquí iría la lógica de guardado en backend si fuese necesaria...
     onNext();
     setGuardando(false);
   };
@@ -92,7 +114,9 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
     <>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Parámetros y Porcentaje</h1>
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          Parámetros y Porcentaje
+        </h1>
       </div>
 
       {/* Lista de parámetros */}
@@ -126,31 +150,33 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
               )}
             </div>
 
-            {/* Porcentaje máximo alineado arriba */}
+            {/* Porcentaje máximo */}
             <div className="flex flex-row items-start gap-2 md:w-48 min-w-[140px] md:pr-4">
-              <label className="text-gray-700 text-sm font-semibold whitespace-nowrap mr-2">Porcentaje</label>
+              <label className="text-gray-700 text-sm font-semibold whitespace-nowrap mr-2">
+                Porcentaje
+              </label>
               <input
                 name="porcentaje_maximo"
                 type="number"
                 placeholder="%"
+                min="0"
+                max="100"
                 value={p.porcentaje_maximo}
                 onChange={e => handleInput(i, e)}
                 className="w-20 border border-gray-300 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
-                min="0"
-                max="100"
               />
             </div>
 
-            {/* Botón eliminar alineado arriba */}
+            {/* Botón Eliminar */}
             <div className="flex items-start md:justify-end md:w-40 mt-2 md:mt-0">
               <button
                 type="button"
                 onClick={() => {
-                  const nuevos = parametros.slice();
-                  nuevos.splice(i, 1);
-                  onChange(nuevos);
+                  const copia = parametros.slice();
+                  copia.splice(i, 1);
+                  onChange(copia);
                 }}
-                className="btn-eliminar"
+                className="btn-eliminar inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition"
                 title="Eliminar parámetro"
               >
                 <FiTrash2 className="mr-2" />
