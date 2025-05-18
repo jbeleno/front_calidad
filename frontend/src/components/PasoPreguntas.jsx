@@ -98,8 +98,8 @@ export default function PasoPreguntas({
     });
   };
 
-  const handleFinalizar = () => {
-    // validaciones intactas...
+  const handleFinalizar = async () => {
+    // Validar que todas las preguntas tengan nombre, descripción y valor
     for (const idParam in preguntasPorParametro) {
       for (const p of preguntasPorParametro[idParam]) {
         if (!p.nombre || !p.descripcion || !p.valor) {
@@ -109,7 +109,47 @@ export default function PasoPreguntas({
       }
     }
     setError("");
-    onSubmit(preguntasPorParametro, observacionesPorPregunta);
+    // Guardar en backend
+    for (const idParam in preguntasPorParametro) {
+      for (let idx = 0; idx < preguntasPorParametro[idParam].length; idx++) {
+        const p = preguntasPorParametro[idParam][idx];
+        try {
+          const res = await fetch("https://microev-production.up.railway.app/preguntas/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id_parametro: idParam,
+              id_pregunta_predeterminada: p.id_pregunta_predeterminada || null,
+              nombre: p.nombre,
+              descripcion: p.descripcion,
+              valor_obtenido: parseFloat(p.valor),
+              valor_maximo: 3
+            })
+          });
+          if (!res.ok) throw new Error("Error creando pregunta");
+          const preguntaCreada = await res.json();
+          // Guardar observaciones asociadas a esta pregunta
+          const key = `${idParam}_${idx}`;
+          const observaciones = observacionesPorPregunta[key] || [];
+          for (const texto_observacion of observaciones) {
+            if (texto_observacion && texto_observacion.trim() !== "") {
+              await fetch("https://microev-production.up.railway.app/observaciones/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  id_pregunta: preguntaCreada.id_pregunta,
+                  texto_observacion
+                })
+              });
+            }
+          }
+        } catch (err) {
+          setError("No se pudo crear una pregunta u observación: " + err.message);
+          return;
+        }
+      }
+    }
+    onSubmit();
   };
 
   return (
@@ -263,7 +303,7 @@ export default function PasoPreguntas({
                                 ))}
                                 <button
                                   onClick={() => handleAddObservacion(idParam, idx)}
-                                  className="inline-flex items-center bg-blue-100 hover:bg-blue-200 text-blue-800 px-5 py-2 rounded-lg transition font-semibold"
+                                  className="inline-flex items-center bg-blue-100 hover:bg-blue-200 text-white  px-5 py-2 rounded-lg transition font-semibold"
                                 >
                                   <FiPlus className="mr-1" />
                                   Agregar observación
