@@ -4,12 +4,14 @@ import {
   FiPlus,
   FiTrash2
 } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 export default function PasoDatosGenerales({ datos, onChange, onNext, idMetodologia }) {
   const [empresas, setEmpresas] = useState([]);
   const objetivos     = datos.objetivos     || [];
   const participantes = datos.participantes || [];
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('https://backendcalid-production.up.railway.app/empresas/')
@@ -232,10 +234,16 @@ export default function PasoDatosGenerales({ datos, onChange, onNext, idMetodolo
   return (
     <div>
       {/* HEADER */}
-      <div className="px-6 py-4 border-b">
+      <div className="px-6 py-4 border-b flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-800">
           Datos Generales
         </h1>
+        <button
+          onClick={() => navigate('/empresas')}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition font-semibold"
+        >
+          Volver
+        </button>
       </div>
 
       {/* CUERPO DEL FORM */}

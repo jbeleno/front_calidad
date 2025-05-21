@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function Resultados({ idFormulario, onVolver }) {
   const [parametros, setParametros] = useState([]);
   const [preguntasPorParametro, setPreguntasPorParametro] = useState({});
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
@@ -61,15 +62,13 @@ export default function Resultados({ idFormulario, onVolver }) {
           <h2 className="text-3xl font-bold text-gray-900">
             Resultados del Formulario
           </h2>
-          {onVolver && (
-            <button
-              onClick={onVolver}
-              className="inline-flex items-center space-x-2 bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-lg transition"
-            >
-              <FiArrowLeft />
-              <span>Volver</span>
-            </button>
-          )}
+          <button
+            onClick={() => navigate('/empresas')}
+            className="inline-flex items-center space-x-2 bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-lg transition"
+          >
+            <FiArrowLeft />
+            <span>Volver</span>
+          </button>
         </div>
 
         {/* TABLA */}

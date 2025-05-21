@@ -162,6 +162,8 @@ export default function FormularioWizard({ onClose }) {
             onChange={setParametros}
             onNext={handleParametrosNext}
             onBack={() => setStep(1)}
+            idFormulario={idFormulario}
+            idMetodologia={idMetodologia}
           />
         )}
         {step === 3 && (

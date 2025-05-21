@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
-export default function PasoParametros({ parametros, onChange, onNext, onBack }) {
+export default function PasoParametros({ parametros, onChange, onNext, onBack, idFormulario, idMetodologia }) {
   const [parametrosPredeterminados, setParametrosPredeterminados] = useState([]);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -21,7 +21,22 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
         nombre: '',
         descripcion: '',
         porcentaje_maximo: '',
-        porcentaje_obtenido: ''
+        porcentaje_obtenido: '',
+        esManual: false
+      }
+    ]);
+  };
+
+  const handleAddParametroManual = () => {
+    onChange([
+      ...parametros,
+      {
+        id_parametro_predeterminado: '',
+        nombre: '',
+        descripcion: '',
+        porcentaje_maximo: '',
+        porcentaje_obtenido: '',
+        esManual: true
       }
     ]);
   };
@@ -126,27 +141,47 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
             key={i}
             className="relative bg-gray-50 rounded-xl shadow-md flex flex-col md:flex-row md:items-start gap-4 border border-gray-200 transition hover:shadow-lg group px-6 py-5"
           >
-            {/* Select + descripción */}
+            {/* Select + descripción o inputs manuales */}
             <div className="flex-1 min-w-0 flex flex-col gap-2 md:pr-4">
-              <select
-                value={p.id_parametro_predeterminado || ''}
-                onChange={e => handleSelect(i, e)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
-              >
-                <option value="">Selecciona un parámetro</option>
-                {parametrosPredeterminados.map(pp => (
-                  <option
-                    key={pp.id_parametro_predeterminado}
-                    value={pp.id_parametro_predeterminado}
+              {p.esManual ? (
+                <>
+                  <input
+                    name="nombre"
+                    value={p.nombre}
+                    onChange={e => handleInput(i, e)}
+                    placeholder="Nombre del parámetro"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                  />
+                  <input
+                    name="descripcion"
+                    value={p.descripcion}
+                    onChange={e => handleInput(i, e)}
+                    placeholder="Descripción"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
+                  />
+                </>
+              ) : (
+                <>
+                  <select
+                    value={p.id_parametro_predeterminado || ''}
+                    onChange={e => handleSelect(i, e)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-medium shadow-sm"
                   >
-                    {pp.nombre}
-                  </option>
-                ))}
-              </select>
-              {p.descripcion && (
-                <p className="text-gray-500 text-sm font-normal italic">
-                  {p.descripcion}
-                </p>
+                    <option value="">Selecciona un parámetro</option>
+                    {parametrosPredeterminados
+                      .filter(pp => Number(pp.id_metodologia) === Number(idMetodologia))
+                      .map(pp => (
+                        <option key={pp.id_parametro_predeterminado} value={pp.id_parametro_predeterminado}>
+                          {pp.nombre}
+                        </option>
+                      ))}
+                  </select>
+                  {p.descripcion && (
+                    <p className="text-gray-500 text-sm font-normal italic">
+                      {p.descripcion}
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
@@ -188,14 +223,22 @@ export default function PasoParametros({ parametros, onChange, onNext, onBack })
       </div>
 
       {/* Agregar parámetro */}
-      <div className="flex justify-center mt-8 mb-4">
+      <div className="flex justify-center mt-8 mb-4 gap-4">
         <button
           type="button"
           onClick={handleAddParametro}
           className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white font-bold text-lg shadow-lg transition transform hover:scale-105 focus:outline-none"
         >
           <FiPlus className="mr-2 text-2xl" />
-          Agregar parámetro
+          Agregar parámetro predeterminado
+        </button>
+        <button
+          type="button"
+          onClick={handleAddParametroManual}
+          className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-gray-600 to-gray-400 hover:from-gray-700 hover:to-gray-500 text-white font-bold text-lg shadow-lg transition transform hover:scale-105 focus:outline-none"
+        >
+          <FiPlus className="mr-2 text-2xl" />
+          Agregar parámetro manualmente
         </button>
       </div>
 
