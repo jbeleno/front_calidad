@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FiSearch, FiPlus, FiArrowLeft, FiEye } from "react-icons/fi";
 import Resultados from "./Resultados";
+import { useParams } from "react-router-dom";
 
 export default function FormulariosEmpresaTable({
   empresa,
@@ -176,4 +177,18 @@ export default function FormulariosEmpresaTable({
       </div>
     </div>
   );
+}
+
+function FormulariosEmpresaTableWrapper() {
+  const { id } = useParams();
+  const [empresa, setEmpresa] = React.useState(null);
+
+  React.useEffect(() => {
+    fetch(`https://backendcalid-production.up.railway.app/empresas/${id}`)
+      .then(res => res.json())
+      .then(setEmpresa);
+  }, [id]);
+
+  if (!empresa) return <div>Cargando empresa...</div>;
+  return <FormulariosEmpresaTable empresa={empresa} />;
 }

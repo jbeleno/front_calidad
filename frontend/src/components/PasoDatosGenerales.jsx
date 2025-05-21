@@ -5,7 +5,7 @@ import {
   FiTrash2
 } from 'react-icons/fi';
 
-export default function PasoDatosGenerales({ datos, onChange, onNext }) {
+export default function PasoDatosGenerales({ datos, onChange, onNext, idMetodologia }) {
   const [empresas, setEmpresas] = useState([]);
   const objetivos     = datos.objetivos     || [];
   const participantes = datos.participantes || [];
@@ -162,15 +162,20 @@ export default function PasoDatosGenerales({ datos, onChange, onNext }) {
     // 2. Crear el formulario
     let formulario;
     try {
+      const id_usuario = Number(localStorage.getItem('id_usuario'));
+      const formularioPayload = {
+        id_empresa,
+        fecha: datos.fecha,
+        ciudad: datos.ciudad,
+        nombre_software: datos.nombre_software,
+        id_metodologia: Number(idMetodologia),
+        id_usuario
+      };
+      console.log('JSON que se enviará al backend para crear el formulario:', formularioPayload);
       const res = await fetch('https://microform-production.up.railway.app/formularios/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_empresa,
-          fecha: datos.fecha,
-          ciudad: datos.ciudad,
-          nombre_software: datos.nombre_software
-        })
+        body: JSON.stringify(formularioPayload)
       });
       if (!res.ok) throw new Error('Error creando el formulario');
       formulario = await res.json();

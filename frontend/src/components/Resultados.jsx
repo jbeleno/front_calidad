@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
+import { useParams } from "react-router-dom";
 
 export default function Resultados({ idFormulario, onVolver }) {
   const [parametros, setParametros] = useState([]);
@@ -174,4 +175,9 @@ export default function Resultados({ idFormulario, onVolver }) {
       </div>
     </div>
   );
+}
+
+function ResultadosWrapper() {
+  const { id } = useParams();
+  return <Resultados idFormulario={id} />;
 }

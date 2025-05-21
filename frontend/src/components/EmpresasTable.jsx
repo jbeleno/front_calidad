@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FiSearch, FiPlus, FiEye } from "react-icons/fi";
+import { BrowserRouter as Router, Routes, Route, useParams, useNavigate } from "react-router-dom";
 
 export default function EmpresasTable({ onVerFormularios, onCrearFormulario }) {
   const [empresas, setEmpresas] = useState([]);
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("https://backendcalid-production.up.railway.app/empresas/")
@@ -48,10 +50,17 @@ export default function EmpresasTable({ onVerFormularios, onCrearFormulario }) {
               />
             </div>
             <button
-              onClick={onCrearFormulario}
+              onClick={() => navigate('/formularios/nuevo')}
               className="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             >
               <FiPlus className="mr-2" /> Crear formulario
+            </button>
+            <button
+              onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+              className="inline-flex items-center bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+              style={{marginLeft:8}}
+            >
+              Cerrar sesión
             </button>
           </div>
         </div>
@@ -88,7 +97,7 @@ export default function EmpresasTable({ onVerFormularios, onCrearFormulario }) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
-                      onClick={() => onVerFormularios(emp)}
+                      onClick={() => navigate(`/empresas/${emp.id_empresa}/formularios`)}
                       className="inline-flex items-center bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                     >
                       <FiEye className="mr-1" /> Ver
