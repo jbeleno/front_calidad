@@ -73,7 +73,7 @@ export default function Resultados({ idFormulario, onVolver }) {
 
         {/* TABLA */}
         <div className="overflow-x-auto px-8 py-6">
-          <table className="w-full table-auto border-collapse">
+          <table className="w-full table-auto border-collapse resultados-table">
             <thead className="bg-gray-100 uppercase text-gray-600 text-sm">
               <tr>
                 {[

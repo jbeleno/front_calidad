@@ -309,23 +309,26 @@ export default function AdminHome() {
       >
         <div style={{
           width: '100%',
-          maxWidth: 800,
+          maxWidth: 1200,
           margin: '0 auto',
-          background: '#fff',
-          borderRadius: 18,
-          boxShadow: '0 4px 24px rgba(25, 118, 210, 0.08)',
-          padding: '40px 32px',
-          marginTop: 32,
-          marginBottom: 32,
+          background: 'rgba(255,255,255,0.98)',
+          borderRadius: 28,
+          boxShadow: '0 8px 32px rgba(25, 118, 210, 0.10)',
+          padding: '56px 48px',
+          marginTop: 40,
+          marginBottom: 40,
           minHeight: 600,
           display: 'flex',
           flexDirection: 'column',
-          gap: 24,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 32,
         }}>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            marginBottom: 8,
+            marginBottom: 16,
+            alignItems: 'flex-start',
           }}>
             <h1 style={{
               fontSize: '2rem',
@@ -333,20 +336,23 @@ export default function AdminHome() {
               color: '#1976d2',
               margin: 0,
               lineHeight: 1.2,
+              letterSpacing: '-0.5px',
             }}>{TABS[tab].label}</h1>
             <div style={{
               width: 60,
               height: 3,
               background: 'linear-gradient(90deg, #1976d2, #6366F1)',
               borderRadius: 3,
-              margin: '8px 0 0 0',
+              margin: '10px 0 0 0',
             }}></div>
           </div>
           <div style={{
             flex: 1,
             minHeight: 400,
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'center',
             justifyContent: 'flex-start',
           }}>
             {TABS[tab].comp}

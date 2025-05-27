@@ -295,15 +295,136 @@ button[style*='color:#dc2626']:hover {
 /* Mejorar responsividad de tablas */
 .shadow-md {
   overflow-x: auto;
+  width: 100%;
 }
 
-/* Mejorar visual de los formularios */
+/* Tablas y formularios anchos en escritorio */
+.table-auto {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: unset;
+  table-layout: auto;
+}
+
+th {
+  min-width: 140px;
+  padding: 14px 28px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: left;
+}
+
+td {
+  padding: 12px 24px;
+  min-width: 90px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: left;
+}
+
+/* Justificar texto en celdas de descripción o texto largo */
+td:nth-child(4),
+th:nth-child(4),
+td.descripcion,
+th.descripcion {
+  text-align: justify;
+}
+
+/* Acciones en tablas: botones en fila */
+td:last-child {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Botones de acción más compactos */
+.btn, .btn-eliminar {
+  min-width: 90px;
+  padding: 8px 16px !important;
+  font-size: 1em;
+  border-radius: 8px !important;
+}
+
+/* Formularios: mejor alineación y espaciado */
 .wizard-step {
   background: #f9fafb;
   border-radius: 12px;
   padding: 24px 20px;
   box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wizard-step label {
+  margin-bottom: 2px;
+  margin-top: 8px;
+}
+.wizard-step input, .wizard-step select {
+  margin-bottom: 8px;
+}
+
+/* Responsive solo en pantallas pequeñas */
+@media (max-width: 1100px) {
+  .table-auto {
+    min-width: 700px;
+  }
+}
+@media (max-width: 900px) {
+  .wizard-container {
+    padding: 16px 4px !important;
+  }
+  .table-auto {
+    min-width: 500px;
+  }
+}
+@media (max-width: 600px) {
+  .wizard-container {
+    padding: 8px 0 !important;
+  }
+  .table-auto {
+    min-width: 350px;
+  }
+  th, td {
+    min-width: 80px;
+    font-size: 0.95em;
+  }
+  .btn, .btn-eliminar {
+    min-width: 70px;
+    font-size: 0.95em;
+    padding: 6px 10px !important;
+  }
 }
 
 /* Fin mejoras CRUDs */
+
+.wizard-step, .wizard-container, .shadow-md {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+}
+
+/* Centrar todas las celdas de tablas de resultados, excepto la primera columna */
+.resultados-table th,
+.resultados-table td {
+  text-align: center;
+}
+.resultados-table th:first-child,
+.resultados-table td:first-child {
+  text-align: left;
+}
+
+.resultados-table th:last-child,
+.resultados-table td:last-child {
+  text-align: center !important;
+}
+
+.resultados-table {
+  table-layout: fixed;
+}
+.resultados-table th:last-child,
+.resultados-table td:last-child {
+  text-align: center !important;
+  width: 130px;
+}
