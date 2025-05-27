@@ -194,3 +194,116 @@ button:focus-visible {
   .wizard-buttons button:hover {
     background: #1251a3;
   }
+
+/* --- Mejoras visuales para CRUDs --- */
+
+/* Tablas */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.06);
+}
+thead th {
+  background: #f4f6fa;
+  color: #1976d2;
+  font-weight: 600;
+  padding: 12px 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+tbody td {
+  padding: 10px 8px;
+  color: #222;
+  border-bottom: 1px solid #f0f0f0;
+}
+tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Formularios */
+.wizard-step input,
+.wizard-step select {
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 10px 12px !important;
+  margin-bottom: 12px;
+  background: #f9fafb !important;
+  color: #222 !important;
+  box-shadow: 0 1px 4px rgba(25, 118, 210, 0.04);
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.wizard-step input:focus,
+.wizard-step select:focus {
+  border: 1.5px solid #1976d2 !important;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+}
+
+.wizard-step label {
+  font-weight: 600;
+  color: #1976d2;
+  margin-bottom: 4px;
+}
+
+.wizard-step h4 {
+  color: #1976d2;
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+/* Botones */
+.btn,
+button[type="submit"] {
+  background: #1976d2 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.10);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn:hover,
+button[type="submit"]:hover {
+  background: #1251a3 !important;
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.18);
+}
+
+.btn-eliminar,
+button[style*='color:#dc2626'] {
+  background: #fff !important;
+  color: #dc2626 !important;
+  border: 1.5px solid #dc2626 !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);
+  transition: background 0.2s, color 0.2s;
+}
+.btn-eliminar:hover,
+button[style*='color:#dc2626']:hover {
+  background: #dc2626 !important;
+  color: #fff !important;
+}
+
+/* Mejorar responsividad de tablas */
+.shadow-md {
+  overflow-x: auto;
+}
+
+/* Mejorar visual de los formularios */
+.wizard-step {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 24px 20px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
+  margin-bottom: 16px;
+}
+
+/* Fin mejoras CRUDs */

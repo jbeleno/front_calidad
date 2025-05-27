@@ -55,9 +55,8 @@ export default function CrudEmpresas() {
 
   return (
     <div className="wizard-container" style={{margin:0, padding:0}}>
-      <h3 style={{marginBottom:16}}>Empresas</h3>
-      <div className="shadow-md rounded-xl bg-white" style={{overflowX:'auto'}}>
-        <table className="min-w-full table-auto" style={{marginBottom:24}}>
+      <div className="shadow-md rounded-xl bg-white" style={{overflowX:'auto', marginBottom:24}}>
+        <table className="min-w-full table-auto">
           <thead className="bg-gray-100">
             <tr>
               <th>ID</th>
@@ -73,8 +72,8 @@ export default function CrudEmpresas() {
                 <td>{e.nombre}</td>
                 <td>{e.telefono}</td>
                 <td>
-                  <button onClick={() => handleEdit(e)} style={{marginRight:8, color:'#1976d2'}}>Editar</button>
-                  <button onClick={() => handleDelete(e.id_empresa)} style={{color:'#dc2626'}}>Eliminar</button>
+                  <button onClick={() => handleEdit(e)} className="btn" style={{marginRight:8, background:'#fff', color:'#1976d2', border:'1.5px solid #1976d2'}}>Editar</button>
+                  <button onClick={() => handleDelete(e.id_empresa)} className="btn-eliminar">Eliminar</button>
                 </td>
               </tr>
             ))}
@@ -87,12 +86,12 @@ export default function CrudEmpresas() {
       <form onSubmit={handleSubmit} className="wizard-step" style={{maxWidth:400, margin:'0 auto', display:'flex', flexDirection:'column', gap:8}}>
         <h4>{editId ? "Editar empresa" : "Crear empresa"}</h4>
         <label>Nombre</label>
-        <input name="nombre" value={form.nombre} onChange={handleChange} required className="input" style={{padding:8, border:'1px solid #bbb', borderRadius:4, color:'#111'}} />
+        <input name="nombre" value={form.nombre} onChange={handleChange} required className="input" />
         <label>Teléfono</label>
-        <input name="telefono" value={form.telefono} onChange={handleChange} className="input" style={{padding:8, border:'1px solid #bbb', borderRadius:4, color:'#111'}} />
+        <input name="telefono" value={form.telefono} onChange={handleChange} className="input" />
         {error && <div style={{color:'red'}}>{error}</div>}
-        <button type="submit" disabled={loading} className="btn" style={{background:'#1976d2', color:'#fff', border:'none', padding:'10px 24px', borderRadius:6, fontSize:'1em', cursor:'pointer', marginTop:8}}>{loading ? "Guardando..." : (editId ? "Guardar cambios" : "Crear empresa")}</button>
-        {editId && <button type="button" onClick={()=>{setEditId(null);setForm({ nombre: "", telefono: "" });}} style={{marginTop:8}}>Cancelar</button>}
+        <button type="submit" disabled={loading} className="btn">{loading ? "Guardando..." : (editId ? "Guardar cambios" : "Crear empresa")}</button>
+        {editId && <button type="button" onClick={()=>{setEditId(null);setForm({ nombre: "", telefono: "" });}} className="btn" style={{background:'#e5e7eb', color:'#222', marginTop:8}}>Cancelar</button>}
       </form>
     </div>
   );

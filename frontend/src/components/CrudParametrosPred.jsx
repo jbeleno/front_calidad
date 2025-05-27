@@ -61,9 +61,8 @@ export default function CrudParametrosPred() {
 
   return (
     <div className="wizard-container" style={{margin:0, padding:0}}>
-      <h3 style={{marginBottom:16}}>Parámetros Predeterminados</h3>
-      <div className="shadow-md rounded-xl bg-white" style={{overflowX:'auto'}}>
-        <table className="min-w-full table-auto" style={{marginBottom:24}}>
+      <div className="shadow-md rounded-xl bg-white" style={{overflowX:'auto', marginBottom:24}}>
+        <table className="min-w-full table-auto">
           <thead className="bg-gray-100">
             <tr>
               <th>ID</th>
@@ -81,8 +80,8 @@ export default function CrudParametrosPred() {
                 <td>{p.descripcion}</td>
                 <td>{p.id_metodologia}</td>
                 <td>
-                  <button onClick={() => handleEdit(p)} style={{marginRight:8, color:'#1976d2'}}>Editar</button>
-                  <button onClick={() => handleDelete(p.id_parametro_predeterminado)} style={{color:'#dc2626'}}>Eliminar</button>
+                  <button onClick={() => handleEdit(p)} className="btn" style={{marginRight:8, background:'#fff', color:'#1976d2', border:'1.5px solid #1976d2'}}>Editar</button>
+                  <button onClick={() => handleDelete(p.id_parametro_predeterminado)} className="btn-eliminar">Eliminar</button>
                 </td>
               </tr>
             ))}
@@ -95,19 +94,19 @@ export default function CrudParametrosPred() {
       <form onSubmit={handleSubmit} className="wizard-step" style={{maxWidth:400, margin:'0 auto', display:'flex', flexDirection:'column', gap:8}}>
         <h4>{editId ? "Editar parámetro predeterminado" : "Crear parámetro predeterminado"}</h4>
         <label>Nombre</label>
-        <input name="nombre" value={form.nombre} onChange={handleChange} required className="input" style={{padding:8, border:'1px solid #bbb', borderRadius:4, color:'#111'}} />
+        <input name="nombre" value={form.nombre} onChange={handleChange} required className="input" />
         <label>Descripción</label>
-        <input name="descripcion" value={form.descripcion} onChange={handleChange} className="input" style={{padding:8, border:'1px solid #bbb', borderRadius:4, color:'#111'}} />
+        <input name="descripcion" value={form.descripcion} onChange={handleChange} className="input" />
         <label>ID Metodología</label>
-        <select name="id_metodologia" value={form.id_metodologia} onChange={handleChange} required className="input" style={{padding:8, border:'1px solid #bbb', borderRadius:4, color:'#111'}}>
+        <select name="id_metodologia" value={form.id_metodologia} onChange={handleChange} required className="input">
           <option value="">Seleccione una metodología</option>
           {metodologias.map(met => (
             <option key={met.id_metodologia} value={met.id_metodologia}>{met.nombre}</option>
           ))}
         </select>
         {error && <div style={{color:'red'}}>{error}</div>}
-        <button type="submit" disabled={loading} className="btn" style={{background:'#1976d2', color:'#fff', border:'none', padding:'10px 24px', borderRadius:6, fontSize:'1em', cursor:'pointer', marginTop:8}}>{loading ? "Guardando..." : (editId ? "Guardar cambios" : "Crear parámetro predeterminado")}</button>
-        {editId && <button type="button" onClick={()=>{setEditId(null);setForm({ nombre: "", descripcion: "", id_metodologia: "" });}} style={{marginTop:8}}>Cancelar</button>}
+        <button type="submit" disabled={loading} className="btn">{loading ? "Guardando..." : (editId ? "Guardar cambios" : "Crear parámetro predeterminado")}</button>
+        {editId && <button type="button" onClick={()=>{setEditId(null);setForm({ nombre: "", descripcion: "", id_metodologia: "" });}} className="btn" style={{background:'#e5e7eb', color:'#222', marginTop:8}}>Cancelar</button>}
       </form>
     </div>
   );
