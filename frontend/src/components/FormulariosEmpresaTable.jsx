@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FiSearch, FiPlus, FiArrowLeft, FiEye } from "react-icons/fi";
 import Resultados from "./Resultados";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function FormulariosEmpresaTable({
-  empresa,
-  onVolver,
-  onCrearFormulario
+  empresa
 }) {
+  const navigate = useNavigate();
   const [formularios, setFormularios] = useState([]);
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,7 +61,7 @@ export default function FormulariosEmpresaTable({
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-4 border-b border-gray-200">
           <button
-            onClick={onVolver}
+            onClick={() => navigate('/empresas')}
             className="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           >
             <FiArrowLeft className="mr-1" /> Volver
@@ -71,7 +70,7 @@ export default function FormulariosEmpresaTable({
             Formularios de {empresa.nombre}
           </h2>
           <button
-            onClick={onCrearFormulario}
+            onClick={() => navigate('/formularios/nuevo')}
             className="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           >
             <FiPlus className="mr-1" /> Crear
